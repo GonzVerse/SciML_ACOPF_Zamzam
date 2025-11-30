@@ -38,7 +38,7 @@ with open(os.path.join(output_dir, 'recovered_solutions_v3.pkl'), 'rb') as f:
     recovered_solutions = pickle.load(f)
 
 # Load test data with true OPF solutions
-test_df = pd.read_csv(os.path.join(output_dir, 'opf_case57_test_v2.csv'))
+test_df = pd.read_csv(os.path.join(output_dir, 'opf_case57_test_v3.csv'))
 
 # Load generator limits
 with open(os.path.join(output_dir, 'generator_limits.json'), 'r') as f:
@@ -320,3 +320,4 @@ print(f"  4. Most problematic generator: Gen {np.argmax(np.sum(violations_opf, a
 print(f"  5. Average violations per sample: {violations_per_sample.mean():.2f}")
 
 plt.show()
+
