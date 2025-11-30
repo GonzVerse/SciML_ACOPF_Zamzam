@@ -145,7 +145,7 @@ else:
 # LOAD TEST DATA
 # ============================================
 print(f"\nLoading test data...")
-test_df = pd.read_csv(os.path.join(output_dir, 'opf_case57_test_v2.csv'))
+test_df = pd.read_csv(os.path.join(output_dir, 'opf_case57_test_v3.csv'))
 
 # Extract inputs (pd and qd) - updated column names
 load_pd_cols = [col for col in test_df.columns if col.startswith('pd_')]
@@ -888,3 +888,4 @@ print(f"   • Recovery results: recovery_results_v3.csv")
 print(f"   • Full solutions: recovered_solutions_v3.pkl")
 print(f"   • Visualization: recovery_analysis_v3.png")
 print(f"\nNext step: Compute optimality gap (04_evaluate_with_metrics.py)")
+
