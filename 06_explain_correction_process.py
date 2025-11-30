@@ -46,7 +46,7 @@ load_bus_mask = ppc_base['bus'][:, PD] > 0
 load_bus_indices = np.where(load_bus_mask)[0]
 
 # Load test data
-test_df = pd.read_csv(os.path.join(output_dir, 'opf_case57_test_v2.csv'))
+test_df = pd.read_csv(os.path.join(output_dir, 'opf_case57_test_v3.csv'))
 load_pd_cols = [col for col in test_df.columns if col.startswith('pd_')]
 load_qd_cols = [col for col in test_df.columns if col.startswith('qd_')]
 
@@ -332,4 +332,5 @@ print("""
 This is the EXPECTED behavior in the Zamzam et al. 2019 approach!
 The violation + correction IS the solution, not a bug.
 """)
+
 
