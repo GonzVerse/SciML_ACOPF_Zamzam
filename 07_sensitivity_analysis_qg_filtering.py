@@ -360,9 +360,9 @@ def evaluate_model(model, test_dataset, ppc_base, test_file):
 # MAIN SENSITIVITY ANALYSIS
 # ============================================
 if __name__ == '__main__':
-    train_file = os.path.join(output_dir, 'opf_case57_train_v2.csv')
-    val_file = os.path.join(output_dir, 'opf_case57_val_v2.csv')
-    test_file = os.path.join(output_dir, 'opf_case57_test_v2.csv')
+    train_file = os.path.join(output_dir, 'opf_case57_train_v3.csv')
+    val_file = os.path.join(output_dir, 'opf_case57_val_v3.csv')
+    test_file = os.path.join(output_dir, 'opf_case57_test_v3.csv')
     
     results_summary = []
     
@@ -511,3 +511,4 @@ if __name__ == '__main__':
     print(f"   Success rate: {optimal_row['success_rate']:.1f}%")
     
     plt.show()
+
