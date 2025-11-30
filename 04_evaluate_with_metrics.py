@@ -42,7 +42,7 @@ print("="*60)
 print(f"\nLoading test data and recovered solutions...")
 
 # Load test dataset
-test_df = pd.read_csv(os.path.join(output_dir, 'opf_case57_test_v2.csv'))
+test_df = pd.read_csv(os.path.join(output_dir, 'opf_case57_test_v3.csv'))
 
 # Load recovered solutions (V3 files)
 with open(os.path.join(output_dir, 'recovered_solutions_v3.pkl'), 'rb') as f:
@@ -610,3 +610,4 @@ print(f"  • comprehensive_evaluation.png - Visualization")
 
 
 plt.show()
+
