@@ -12,7 +12,7 @@ Get the complete OPF neural network pipeline running in 3 steps.
 ### 1. Clone Repository
 ```bash
 git clone <your-repo-url>
-cd Version-3
+cd SciML_ACOPF_Zamzam
 ```
 
 ### 2. Install Dependencies
@@ -56,22 +56,22 @@ Run scripts individually for debugging or partial execution:
 python 00_generate_opf_data_pypower.py
 
 # 2. Train neural network (~20 min with GPU)
-python 02_train_opf_network_v3_improved.py
+python 01_train_opf_network.py
 
 # 3. Run power flow recovery - Algorithm 1
-python 03_power_flow_recovery.py
+python 02_power_flow_recovery.py
 
 # 4. Comprehensive evaluation
-python 04_evaluate_with_metrics.py
+python 03_evaluate_with_metrics.py
 
 # 5. Analyze reactive power corrections
-python 05_analyze_qg_correction.py
+python 04_analyze_qg_correction.py
 
 # 6. Visualize correction process
-python 06_explain_correction_process.py
+python 05_explain_correction_process.py
 
 # 7. Sensitivity analysis (optional, ~2 hours)
-python 07_sensitivity_analysis_qg_filtering.py
+python 06_sensitivity_analysis_qg_filtering.py
 ```
 
 ## Expected Output
@@ -118,7 +118,7 @@ pip install PYPOWER
 ```
 
 ### "CUDA out of memory"
-Reduce batch size in `02_train_opf_network_v3_improved.py`:
+Reduce batch size in `01_train_opf_network.py`:
 ```python
 BATCH_SIZE = 128  # Was 256
 ```

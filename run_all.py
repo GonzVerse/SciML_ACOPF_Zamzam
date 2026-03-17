@@ -48,17 +48,17 @@ def main():
                        "Data Generation (100k samples, ~45 min)"))
     
     scripts.extend([
-        ("02_train_opf_network_v3_improved.py", 
+        ("01_train_opf_network.py",
          "Neural Network Training (~20 min)"),
-        ("03_power_flow_recovery.py", 
+        ("02_power_flow_recovery.py",
          "Power Flow Recovery - Algorithm 1"),
-        ("04_evaluate_with_metrics.py", 
+        ("03_evaluate_with_metrics.py",
          "Comprehensive Evaluation & Metrics"),
-        ("05_analyze_qg_correction.py", 
+        ("04_analyze_qg_correction.py",
          "Reactive Power Correction Analysis"),
-        ("06_explain_correction_process.py", 
+        ("05_explain_correction_process.py",
          "Correction Process Visualization"),
-        ("07_sensitivity_analysis_qg_filtering.py", 
+        ("06_sensitivity_analysis_qg_filtering.py",
          "Sensitivity Analysis (~2 hours)")
     ])
     
