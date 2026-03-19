@@ -1,132 +1,161 @@
-# Neural Network AC Optimal Power Flow (AC-OPF)
+<h1 align="center">Neural Network AC Optimal Power Flow</h1>
+<p align="center">
+  <em>Reproducing Zamzam & Baker (2019) — from research paper to working implementation</em>
+</p>
 
-> Reproducing and evaluating the method from **Zamzam & Baker (2019)**: replacing iterative AC-OPF optimization with a neural network + feasibility recovery pipeline on the IEEE 57-bus system.
-
-![Python](https://img.shields.io/badge/Python-3.7%2B-blue?logo=python&logoColor=white)
-![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-EE4C2C?logo=pytorch&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-green)
-![IEEE 57-Bus](https://img.shields.io/badge/IEEE-57--Bus%20System-orange)
-![Course](https://img.shields.io/badge/Johns%20Hopkins-SciML-9370DB)
-
----
-
-## Project Overview
-
-This repository contains a full implementation of a learning-based AC Optimal Power Flow workflow for the IEEE 57-bus network. The goal is to predict near-optimal operating points from load demands in milliseconds, then recover physically feasible solutions via power flow corrections.
-
-This work was completed as a graduate project in Scientific Machine Learning at Johns Hopkins University (Fall 2025).
-
-### Why this matters
-
-AC-OPF is central to power grid operation, but traditional solvers can be too slow for high-frequency decision settings. This project explores how machine learning can reduce runtime while preserving engineering feasibility.
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.7%2B-blue?logo=python&logoColor=white" alt="Python"/>
+  <img src="https://img.shields.io/badge/PyTorch-2.0%2B-EE4C2C?logo=pytorch&logoColor=white" alt="PyTorch"/>
+  <img src="https://img.shields.io/badge/License-MIT-green" alt="License"/>
+  <img src="https://img.shields.io/badge/IEEE-57--Bus%20System-orange" alt="IEEE 57-Bus"/>
+  <img src="https://img.shields.io/badge/Course-Johns%20Hopkins%20SciML-9370DB" alt="JHU SciML"/>
+</p>
 
 ---
 
-## Key Results
-
-| Metric | This implementation | Zamzam & Baker (2019) |
-|---|:---:|:---:|
-| Reactive power violation \(\delta_q\) | **0.967 MVAr** | 1.58 MVAr |
-| Optimality gap | **< 0.5%** | 0.46% |
-| Neural network inference time | **0.061 ms** | ~1 ms |
-| End-to-end time (NN + recovery PF) | **17.98 ms** | 211 ms |
-| Power flow convergence rate | **100%** | — |
-
-- Approx. **5.9× faster** end-to-end runtime versus the reported paper benchmark.
-- Approx. **3,500× faster** than iterative OPF when comparing NN inference only.
+> **Graduate course project — Johns Hopkins University, Scientific Machine Learning (Fall 2025).**
+> Full implementation of the Zamzam & Baker (2019) method for solving AC Optimal Power Flow (AC-OPF) using a neural network, replacing an iterative solver that takes hundreds of milliseconds with a forward pass that takes under 1 ms.
 
 ---
 
-## What I implemented
+## Network Animation
 
-This is an end-to-end reproduction and analysis effort, not only model training.
+<div align="center">
 
-- **Data generation pipeline** for 100,000 R-ACOPF samples with correlated \(\pm 70\%\) load variation.
-- **\(\alpha/\beta\) output parameterization** to keep predicted generator outputs within physical bounds before recovery.
-- **Algorithm 1 (power flow recovery)** with Qg clipping and PV→PQ bus switching to restore feasibility.
-- **Evaluation framework** for \(\delta_q\), optimality gap, feasibility checks, and timing benchmarks.
-- **Sensitivity analysis** for Qg filtering thresholds (script `06_sensitivity_analysis_qg_filtering.py`).
+![IEEE 57-Bus Neural Network Dispatch](Outputs_V3/network_animation.gif)
+
+*The IEEE 57-bus power grid under varying load — node color shows voltage magnitude (p.u.) as the trained neural network adapts dispatch across 48 load scenarios. Red generator nodes triggered reactive power correction (Algorithm 1). Branch brightness tracks line loading.*
+
+</div>
 
 ---
 
-## Method at a glance
+## Results at a Glance
 
-### Model
-- **Inputs:** bus-level active/reactive demands \((P_d, Q_d)\)
-- **Outputs:** normalized \(\alpha\) (active generation) and \(\beta\) (voltage magnitude)
-- **Architecture:** fully connected network, 3 hidden layers, sigmoid activations
+<div align="center">
 
-### Constraint-aware parameterization
+| Metric | This Implementation | Zamzam (2019) Paper |
+|--------|:-------------------:|:-------------------:|
+| **Reactive power violation δ_q** | **0.967 MVAr** | 1.58 MVAr |
+| **Optimality gap** | **< 0.5%** | 0.46% |
+| **NN inference time** | **0.061 ms** | ~1 ms |
+| **Total time (NN + power flow)** | **17.98 ms** | 211 ms |
+| **Convergence rate** | **100%** | — |
 
-\[
-P_g = P_{g,min} + \alpha (P_{g,max} - P_{g,min})
-\]
-\[
-V_m = V_{m,min} + \beta (V_{m,max} - V_{m,min})
-\]
+</div>
 
-### Feasibility recovery (Algorithm 1)
-1. Predict \(\alpha,\beta\) from \((P_d,Q_d)\)
-2. Map to physical \(P_g,V_m\)
-3. Run power flow to obtain \(Q_g,V_a\)
-4. Clip violating \(Q_g\), switch affected buses from PV to PQ
-5. Re-run power flow with fixed \(Q_g\) and released voltage constraints
+> **5.9× end-to-end speedup** vs. the paper's reported time. The neural network solves problems ~3,500× faster than a traditional OPF solver when inference alone is compared.
+
+---
+
+## What This Project Does
+
+AC Optimal Power Flow is a core computation in power grid operations — it finds the cheapest generator dispatch that keeps voltages and currents within safe limits. Traditional solvers (MATPOWER, PyPower) are iterative and take hundreds of milliseconds, making real-time control difficult.
+
+Zamzam & Baker (2019) showed you can train a small neural network to predict near-optimal solutions directly from load demands, then apply a two-stage **power flow recovery** procedure to guarantee feasibility. This project implements that method from scratch using PyTorch and PyPower on the IEEE 57-bus test system.
+
+---
+
+## My Implementation
+
+This is not just a re-run of provided code. Key things I built:
+
+- **Data generation pipeline** — Solved 100,000 R-ACOPF instances with correlated load variations (±70% from base) to produce interior-point training data
+- **α/β parameterization** — Reproduced the normalized output layer that guarantees generator outputs stay within physical bounds *before* the power flow step
+- **Algorithm 1 (power flow recovery)** — Implemented the two-stage correction: fix Pg/Vm → solve for Qg/Va → clip Qg violations → re-solve with released voltage constraints
+- **Evaluation framework** — Computed the paper's δ_q metric, optimality gap, and feasibility residuals to validate against reported benchmarks
+- **Sensitivity analysis** — Studied how the Qg filtering threshold affects model quality (script `06`)
+
+<details>
+<summary><strong>Results visualization</strong></summary>
+
+![Comprehensive Evaluation](Outputs_V3/comprehensive_evaluation.png)
+
+</details>
 
 ---
 
 ## Quick Start
 
-### 1) Install
+### 1. Clone & install
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/GonzVerse/SciML_ACOPF_Zamzam.git
 cd SciML_ACOPF_Zamzam
 pip install -r requirements.txt
 ```
 
-### 2) Run the full pipeline
+### 2. Run the full pipeline
 
 ```bash
 python run_all.py          # ~2-3 hours (includes data generation)
-python run_all.py --quick  # ~30 minutes (skips data generation)
+python run_all.py --quick  # ~30 min (skip data generation)
 ```
 
-### 3) Run individual stages
+### 3. Or step by step
 
 ```bash
-python 00_generate_opf_data_pypower.py
-python 01_train_opf_network.py
-python 02_power_flow_recovery.py
-python 03_evaluate_with_metrics.py
-python 04_analyze_qg_correction.py
-python 05_explain_correction_process.py
-python 06_sensitivity_analysis_qg_filtering.py
+python 00_generate_opf_data_pypower.py          # Generate 100k training samples (~45 min)
+python 01_train_opf_network.py                  # Train neural network (~20 min)
+python 02_power_flow_recovery.py                # Apply Algorithm 1
+python 03_evaluate_with_metrics.py              # Compute δ_q, optimality gap, speedup
+python 04_analyze_qg_correction.py              # Deep dive into Qg violations
+python 05_explain_correction_process.py         # Step-by-step walkthrough
+python 06_sensitivity_analysis_qg_filtering.py  # Optional: ~2 hours
+python 07_visualize_network_animation.py        # Generate network GIF animation
 ```
 
-For setup details and troubleshooting, see [QUICKSTART.md](QUICKSTART.md).
+See **[QUICKSTART.md](QUICKSTART.md)** for full installation details and troubleshooting.
 
 ---
 
 ## Repository Structure
 
-```text
+```
 SciML_ACOPF_Zamzam/
-├── 00_generate_opf_data_pypower.py
-├── 01_train_opf_network.py
-├── 02_power_flow_recovery.py
-├── 03_evaluate_with_metrics.py
-├── 04_analyze_qg_correction.py
-├── 05_explain_correction_process.py
-├── 06_sensitivity_analysis_qg_filtering.py
-├── run_all.py
-├── QUICKSTART.md
-├── COMPREHENSIVE_SUMMARY.md
+├── 00_generate_opf_data_pypower.py         # R-ACOPF data generation (IEEE 57-bus)
+├── 01_train_opf_network.py                 # Neural network training (α/β parameterization)
+├── 02_power_flow_recovery.py               # Algorithm 1: two-stage feasibility recovery
+├── 03_evaluate_with_metrics.py             # δ_q, optimality gap, timing benchmarks
+├── 04_analyze_qg_correction.py             # Per-generator Qg violation analysis
+├── 05_explain_correction_process.py        # Annotated walkthrough for understanding
+├── 06_sensitivity_analysis_qg_filtering.py # Data filtering threshold study
+├── 07_visualize_network_animation.py       # Animated GIF of NN dispatch on 57-bus grid
+├── run_all.py                              # One-command pipeline runner
+├── COMPREHENSIVE_SUMMARY.md               # Full methodology deep-dive
+├── QUICKSTART.md                           # Installation & troubleshooting
 ├── requirements.txt
 ├── LICENSE
 └── Outputs_V3/
+    ├── generator_limits.json
+    ├── network_animation.gif
     ├── comprehensive_evaluation.png
-    ├── network_topology.png
-    └── generator_limits.json
+    └── network_topology.png
+```
+
+---
+
+## Method Summary
+
+### Neural Network
+- **Input:** Active and reactive load demands at all buses (Pd, Qd)
+- **Output:** Normalized parameters α (active power) and β (voltage magnitude)
+- **Architecture:** Fully connected, 3 hidden layers, sigmoid activations throughout
+- **Key insight:** Sigmoid output + linear scaling guarantees Pg ∈ [Pg_min, Pg_max] and Vm ∈ [Vm_min, Vm_max] by construction
+
+### Parameterization
+```
+Pg = Pg_min + α × (Pg_max − Pg_min)
+Vm = Vm_min + β × (Vm_max − Vm_min)
+```
+
+### Power Flow Recovery (Algorithm 1)
+```
+1. Predict α, β = NN(Pd, Qd)
+2. Convert → physical Pg, Vm
+3. Solve power flow → get Qg, Va
+4. If Qg violates limits → clip to [Qg_min, Qg_max], switch bus type PV→PQ
+5. Re-solve with fixed Qg, free Vm
 ```
 
 ---
@@ -136,12 +165,6 @@ SciML_ACOPF_Zamzam/
 - Dataset generation and model training are stochastic and may produce small metric variation across runs.
 - Runtime values depend on hardware and Python environment.
 - The default scripts are configured for the IEEE 57-bus case.
-
----
-
-## Visual Output
-
-![Comprehensive evaluation](Outputs_V3/comprehensive_evaluation.png)
 
 ---
 
@@ -156,17 +179,16 @@ SciML_ACOPF_Zamzam/
 }
 ```
 
-Libraries and tools: PyTorch, PyPower, scikit-learn, and MATPOWER IEEE test cases.
+**Tools:** PyPower · PyTorch · scikit-learn · MATPOWER IEEE test cases
 
 ---
 
 ## Author
 
-**Jose Maria Borrego Acosta**  
-Graduate Student, Johns Hopkins University
+**Jose Maria Borrego Acosta** — Graduate student, Johns Hopkins University
 
 ---
 
 ## License
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE) for details.
